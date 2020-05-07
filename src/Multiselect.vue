@@ -325,7 +325,7 @@ export default {
     },
     searchInDropdown: {
       type: Boolean,
-      default: true
+      default: false
     }
   },
   computed: {
