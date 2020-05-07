@@ -11,7 +11,6 @@
     class="multiselect"
     role="combobox"
     :aria-owns="'listbox-'+id">
-      <div>jan test</div>
       <slot name="caret" :toggle="toggle">
         <div @mousedown.prevent.stop="toggle()" class="multiselect__select"></div>
       </slot>
@@ -47,7 +46,7 @@
         </transition>
         <input
           ref="search"
-          v-if="searchable"
+          v-if="searchable && !searchInDropdown"
           :name="name"
           :id="id"
           type="text"
@@ -99,6 +98,31 @@
           ref="list"
         >
           <ul class="multiselect__content" :style="contentStyle" role="listbox" :id="'listbox-'+id">
+            <div v-if="searchable && searchInDropdown" class="input-wrapper">
+              <input
+                ref="search"
+                :name="name"
+                :id="id"
+                type="text"
+                autocomplete="off"
+                spellcheck="false"
+                :placeholder="placeholder"
+                :style="inputStyle"
+                :value="search"
+                :disabled="disabled"
+                :tabindex="tabindex"
+                @input="updateSearch($event.target.value)"
+                @focus.prevent="activate()"
+                @blur.prevent="deactivate()"
+                @keyup.esc="deactivate()"
+                @keydown.down.prevent="pointerForward()"
+                @keydown.up.prevent="pointerBackward()"
+                @keypress.enter.prevent.stop.self="addPointerElement($event)"
+                @keydown.delete.stop="removeLastElement()"
+                class="multiselect__input"
+                :aria-controls="'listbox-'+id"
+              />
+            </div>
             <slot name="beforeList"></slot>
             <li v-if="multiple && max === internalValue.length">
               <span class="multiselect__option">
@@ -298,6 +322,10 @@ export default {
     tabindex: {
       type: Number,
       default: 0
+    },
+    searchInDropdown: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
@@ -662,6 +690,22 @@ fieldset[disabled] .multiselect {
   margin: 0;
   min-width: 100%;
   vertical-align: top;
+}
+
+.multiselect__content .input-wrapper {
+  position: sticky;
+  top: 0;
+  background-color: inherit;
+  z-index: 10;
+  border-radius: none;
+  background: #fff;
+}
+
+.multiselect__content .multiselect__input {
+  position: relative;
+  padding: 8px 8px 8px 16px;
+  margin: 0;
+  background: transparent;
 }
 
 .multiselect--above .multiselect__content-wrapper {
